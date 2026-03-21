@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  local_db:
+    image: postgis/postgis:15-3.3
+    container_name: echonet_local_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: localpassword
+      POSTGRES_DB: echonet
+    ports:
+      - "5432:5432"
