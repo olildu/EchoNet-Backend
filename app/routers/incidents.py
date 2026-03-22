@@ -13,6 +13,20 @@ from app.routers.websockets import manager # NEW IMPORT
 
 router = APIRouter(prefix="/incidents", tags=["Incidents"])
 
+@router.get("/all")
+def get_all_incidents(db: Session = Depends(get_db)):
+    # Fetch all incidents ordered by newest first
+    incidents = db.query(models.Incident).order_by(models.Incident.reported_at.desc()).all()
+    
+    # Return custom dict to bypass strict schema limits temporarily for the dashboard
+    return [{
+        "id": str(i.id),
+        "category": i.category.value,
+        "status": i.status.value,
+        "description": i.description,
+        "reported_at": i.reported_at.isoformat() if i.reported_at else None
+    } for i in incidents]
+
 # UPDATED: Changed to async def to support awaiting the websocket broadcast
 @router.post("/", response_model=schemas.IncidentResponse)
 async def report_incident(incident: schemas.IncidentCreate, db: Session = Depends(get_db)):
