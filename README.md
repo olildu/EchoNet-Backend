@@ -11,11 +11,14 @@ The high-performance core of the EchoNet network. Built with **FastAPI** and **P
 ## 📺 Demo
 
 <p align="center">
-  <a href="https://youtu.be/HdIgbg-pKwM">
-    <img src="https://img.youtube.com/vi/HdIgbg-pKwM/0.jpg" alt="EchoNet Backend Demo" width="500">
-  </a>
+  <img src="https://github.com/olildu/EchoNet-Frontend/blob/main/project_assets/echonet_demo.gif?raw=true" width="500">
 </p>
 
+<p align="center">
+  <a href="https://youtu.be/HdIgbg-pKwM">
+    ▶️ Watch Full Demo on YouTube
+  </a>
+</p>
 
 ## 🌟 Technical Highlights & Differentiators
 
