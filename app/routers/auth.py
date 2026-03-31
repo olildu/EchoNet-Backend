@@ -90,5 +90,44 @@ def get_volunteer_stats(user_id: str, db: Session = Depends(get_db)):
         "hours_logged": round(total_hours, 1),
         "phone": user.phone,
         "age": user.age,
-        "skills": skills
+        "skills": skills,
+        "is_active": user.is_active  
     }
+
+# NEW: Endpoint to toggle volunteer availability
+@router.put("/users/{user_id}/status")
+def update_user_status(user_id: str, is_active: bool, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.is_active = is_active
+    db.commit()
+    return {"message": "Status updated", "is_active": user.is_active}
+
+@router.get("/volunteers/detailed")
+def get_detailed_volunteers(db: Session = Depends(get_db)):
+    # 1. Fetch all volunteers
+    volunteers = db.query(models.User).filter(models.User.role == models.UserRole.VOLUNTEER).all()
+    
+    results = []
+    for v in volunteers:
+        # 2. Fetch their specific skills
+        skills = db.query(models.VolunteerSkill).filter(models.VolunteerSkill.volunteer_id == v.id).all()
+        
+        # 3. Aggregate their completed tasks count
+        tasks_done = db.query(models.Task).filter(
+            models.Task.volunteer_id == v.id, 
+            models.Task.status == models.TaskStatus.COMPLETED
+        ).count()
+        
+        results.append({
+            "id": str(v.id),
+            "full_name": v.full_name,
+            "phone": v.phone,
+            "is_active": v.is_active,
+            "skills": [s.skill.value for s in skills],
+            "tasks_completed": tasks_done
+        })
+    
+    return results

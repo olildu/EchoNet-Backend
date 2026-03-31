@@ -13,19 +13,29 @@ from app.routers.websockets import manager # NEW IMPORT
 
 router = APIRouter(prefix="/incidents", tags=["Incidents"])
 
+# UPDATE THIS FUNCTION IN app/routers/incidents.py
 @router.get("/all")
 def get_all_incidents(db: Session = Depends(get_db)):
-    # Fetch all incidents ordered by newest first
-    incidents = db.query(models.Incident).order_by(models.Incident.reported_at.desc()).all()
+    # Fetch all incidents ordered by newest first, extracting the coordinates
+    results = db.query(
+        models.Incident.id,
+        models.Incident.category,
+        models.Incident.status,
+        models.Incident.description,
+        models.Incident.reported_at,
+        func.ST_Y(models.Incident.location).label("lat"),
+        func.ST_X(models.Incident.location).label("lng")
+    ).order_by(models.Incident.reported_at.desc()).all()
     
-    # Return custom dict to bypass strict schema limits temporarily for the dashboard
     return [{
-        "id": str(i.id),
-        "category": i.category.value,
-        "status": i.status.value,
-        "description": i.description,
-        "reported_at": i.reported_at.isoformat() if i.reported_at else None
-    } for i in incidents]
+        "id": str(r.id),
+        "category": r.category.value,
+        "status": r.status.value,
+        "description": r.description,
+        "reported_at": r.reported_at.isoformat() if r.reported_at else None,
+        "latitude": r.lat,
+        "longitude": r.lng
+    } for r in results]
 
 # UPDATED: Changed to async def to support awaiting the websocket broadcast
 @router.post("/", response_model=schemas.IncidentResponse)
